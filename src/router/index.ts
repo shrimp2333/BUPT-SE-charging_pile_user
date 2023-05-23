@@ -140,6 +140,14 @@ const routes: RouteRecordRaw[] = [
         ],
     },
     {
+        path: '/register',
+        name: 'Register',
+        meta: {
+            title: '注册',
+        },
+        component: () => import(/* webpackChunkName: "register" */ '../views/register.vue'),
+    },
+    {
         path: '/login',
         name: 'Login',
         meta: {
@@ -166,7 +174,9 @@ router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} | vue-manage-system`;
     const role = localStorage.getItem('ms_username');
     const permiss = usePermissStore();
-    if (!role && to.path !== '/login') {
+    if (to.path === '/register') {
+        next();
+    } else if (!role && to.path !== '/login') {
         next('/login');
     } else if (to.meta.permiss && !permiss.key.includes(to.meta.permiss)) {
         // 如果没有权限，则进入403

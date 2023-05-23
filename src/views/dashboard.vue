@@ -6,17 +6,17 @@
 					<div class="user-info">
 						<el-avatar :size="120" :src="imgurl" />
 						<div class="user-info-cont">
-							<div class="user-info-name">{{ name }}</div>
+							<div class="user-info-name">{{ user_data.user_name }}</div>
 							<div>{{ role }}</div>
 						</div>
 					</div>
 					<div class="user-info-list">
 						邮箱：
-						<span>123456789@gmail.com</span>
+						<span>{{ user_data.email }}</span>
 					</div>
 					<div class="user-info-list">
 						车型：
-						<span>教练车</span>
+						<span>{{ user_data.car_type }}</span>
 					</div>
 				</el-card>
 				<el-card shadow="hover" style="height:500px;">
@@ -108,7 +108,7 @@
 									</el-icon>
 								</i>
 								<div class="grid-cont-right">
-									<div class="grid-num">TS1234</div>
+									<div class="grid-num">{{ user_data.license_plate }}</div>
 									<div>车牌号</div>
 								</div>
 							</div>
@@ -123,7 +123,7 @@
 									</el-icon>
 								</i>
 								<div class="grid-cont-right">
-									<div class="grid-num">321/KWH</div>
+									<div class="grid-num">{{ user_data.battery_capacity }}/KWH</div>
 									<div>电池容量</div>
 								</div>
 							</div>
@@ -274,6 +274,17 @@ interface ChargeFormHoler {
 	Quantity: number | null;
 }
 
+interface UserData {
+	user_id: string;
+	user_name: string;
+	email: string;
+	license_plate: string;
+	car_type: string;
+	battery_capacity: number;
+	created_at: number;
+	updated_at: number;
+}
+
 const chargePrice: ChargePrice = {
 	type: "line",
 	title: {
@@ -313,6 +324,7 @@ const chargeSteps = reactive([
 	{ step: "进入等待区等待叫号" },
 	{ step: "进入充电区进入待充电队列" },
 ]);
+
 const costRules = reactive([
 	{ rule: "总费用 = 充电费 + 服务费" },
 	{ rule: "充电费 = 单位电价 * 充电度数" },
@@ -430,6 +442,17 @@ const chargeFormHoler: ChargeFormHoler = reactive({
 	QuantityHolder: chargeForm.custom ? "请先选择充电模式和充电时长" : "已选择一键充满",
 	Quantity: null,
 })
+
+const user_data = reactive<UserData>({
+	user_id: "1",
+	user_name: "user001",
+	email: "123@gmail.com",
+	license_plate: "TS1234",
+	car_type: "教练车",
+	battery_capacity: 321,
+	created_at: 123456789,
+	updated_at: 123456789,
+});
 
 const isEmpty = (str: any): boolean => {
 	if (str === null || str === '' || str === undefined || str.length === 0) {
