@@ -65,6 +65,7 @@ import { usePermissStore } from '../store/permiss';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
+import { GetBaseInfoWhenLogin } from '../store/baseinfo';
 
 interface RegisterInfo {
     username: string;
@@ -158,6 +159,12 @@ const submitForm = (formEl: FormInstance | undefined) => {
             // const keys = permiss.defaultList[param.username == 'admin' ? 'admin' : 'user'];
             // permiss.handleSet(keys);
             // localStorage.setItem('ms_keys', JSON.stringify(keys));
+            GetBaseInfoWhenLogin(resp.token);
+
+            const keys = permiss.defaultList['user'];
+            permiss.handleSet(keys);
+            localStorage.setItem('ms_keys', JSON.stringify(keys));
+
             ElMessage.success(resp.msg);
             router.push('/');
         } else {

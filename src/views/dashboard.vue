@@ -27,43 +27,50 @@
 								<el-card shadow="hover" style="background-color: rgb(240, 250, 250);">
 									<el-form label-position="left" inline class="demo-table-expand">
 										<el-row style="margin-bottom: -4%;">
-											<el-col :span="6">
-												<el-form-item label="记录id">
-													<span>{{ props.row.record_id }}</span>
+											<el-col :span="12">
+												<el-form-item label="详单id  ">
+													<span>{{ props.row.detail_id }}</span>
 												</el-form-item>
 											</el-col>
-											<el-col :span="6">
-												<el-form-item label="请求id">
-													<span>{{ props.row.request_id }}</span>
+											<el-col :span="12">
+												<el-form-item label="充电桩id  ">
+													<span>{{ props.row.charging_pile_id }}</span>
 												</el-form-item>
 											</el-col>
-											<el-col :span="6">
-												<el-form-item label="充电桩id">
-													<span>{{ props.row.charging_station_id }}</span>
+										</el-row>
+										<el-row style="margin-bottom: -4%;">
+											<el-col :span="12">
+												<el-form-item label="订单状态">
+													<span>{{ (props.row.status === 0 ? "正在进行" : "已完成") }}</span>
+												</el-form-item>
+											</el-col>
+											<el-col :span="12">
+												<el-form-item label="生成时间">
+													<span>{{ formatUnixTimestamp(props.row.generate_time) }}</span>
 												</el-form-item>
 											</el-col>
 										</el-row>
 										<el-row style="margin-bottom: -4%;">
 											<el-col :span="12">
 												<el-form-item label="开始时间">
-													<span>{{ props.row.start_time }}</span>
+													<span>{{ formatUnixTimestamp(props.row.start_time) }}</span>
 												</el-form-item>
 											</el-col>
 											<el-col :span="12">
 												<el-form-item label="结束时间">
-													<span>{{ props.row.end_time }}</span>
+													<span>{{ formatUnixTimestamp(props.row.end_time) }}</span>
 												</el-form-item>
 											</el-col>
 										</el-row>
 										<el-row style="margin-bottom: -4%;">
 											<el-col :span="12">
-												<el-form-item label="总费用">
+												<el-form-item label="总费用  ">
 													<span>{{ props.row.total_fee }}</span>
 												</el-form-item>
 											</el-col>
 											<el-col :span="12">
-												<el-form-item label="实际用电量">
-													<span>{{ props.row.actual_power }}</span>
+												<el-form-item label="充电量">
+													<span>{{ props.row.charging_power }}</span>
 												</el-form-item>
 											</el-col>
 										</el-row>
@@ -83,17 +90,21 @@
 								</el-card>
 							</template>
 						</el-table-column>
-						<el-table-column label="订单号" prop="request_id" sortable> </el-table-column>
-						<el-table-column label="充电量" prop="actual_power" sortable>
+						<el-table-column label="订单号" prop="detail_id" sortable> </el-table-column>
+						<el-table-column label="充电量" prop="charging_power" sortable>
 							<template #default="props">
-								<el-tag type="success">{{ props.row.actual_power }}</el-tag>
+								<el-tag type="success">{{ props.row.charging_power }}</el-tag>
 							</template>
 						</el-table-column>
 						<el-table-column label="总费用" prop="total_fee" sortable>
 							<template #default="props">
 								<el-tag style="color: orange;">{{ props.row.charging_fee }}</el-tag>
 							</template> </el-table-column>
-						<el-table-column label="充电时间" prop="end_time" width="200%" sortable> </el-table-column>
+						<el-table-column label="充电时间" prop="end_time" width="200%" sortable>
+							<template #default="props">
+								{{ formatUnixTimestamp(props.row.end_time) }}
+							</template>
+						</el-table-column>
 					</el-table>
 				</el-card>
 			</el-col>
@@ -138,7 +149,7 @@
 									</el-icon>
 								</i>
 								<div class="grid-cont-right">
-									<div class="grid-num">5000</div>
+									<div class="grid-num">{{ waittingNum }}</div>
 									<div>排队号</div>
 								</div>
 							</div>
@@ -190,25 +201,36 @@
 							</div>
 						</el-tab-pane>
 						<el-tab-pane :label="`当前订单`" name="second">
+							<!-- TODO: 完善逻辑 -->
 							<el-card shadow="hover">
 								<el-row style="margin-bottom: 0%;">
 									<el-col :span="8">订单号:
-										<span style="color: blue;"> {{ 123465 }} </span>
+										<span style="color: blue;">
+											{{ curStatus.state === -1 ? "暂无进行中的订单" : curStatus.charging_pile_id }}
+										</span>
 									</el-col>
 									<el-col :span="8">充电模式:
-										<span style="color: red;">{{ "⚡快充模式" }}</span>
+										<span style="color: red;">
+											{{ curStatus.state === -1 ? "暂无进行中的订单" : curStatus.charging_type === 1 ?
+												"⚡快充模式" : "慢充模式" }}
+										</span>
 									</el-col>
 									<el-col :span="8">充电时间:
-										<span style="color: orange;">{{ 123465 }} min</span>
+										<span style="color: orange;">
+											{{ curStatus.state === -1 ? "暂无进行中的订单" : curStatus.charging_time +
+												" min" }}
+										</span>
 									</el-col>
 								</el-row>
 							</el-card>
-							<el-steps :active="3" align-center finish-status="success" style="margin-top: 4%;">
+							<el-steps :active="curStatus.state + (curStatus.state > 1 ? 1 : 1)" align-center
+								finish-status="success" style="margin-top: 4%;"
+								@change="onChargeStatusChange(curStatus.state + 1)">
 								<el-step title="提交充电请求" description="提交充电请求等待进入排队"></el-step>
 								<el-step title="等候区等待" description="在等待区等待叫号，准备进入充电区"></el-step>
-								<el-step title="充电区等待" description="在充电区等待前方车辆充电完毕，准备进行充电"></el-step>
-								<el-step title="充电区充电" description="在充电区进行进行充电，同时开始计费"></el-step>
-								<el-step title="结束充电" description="充电结束，用户可以自行离开"></el-step>
+								<!-- <el-step title="充电区等待" description="在充电区等待前方车辆充电完毕，准备进行充电"></el-step> -->
+								<el-step title="等待充电" description="在充电区等待前方车辆充电完毕"></el-step>
+								<el-step title="充电完成" description="充电结束，用户可以自行离开"></el-step>
 							</el-steps>
 							<el-row style="margin-top: 1%;"></el-row>
 							<el-button type="primary" style="margin-left: 25%; font-size: 20px; width: 10%;" size="large"
@@ -243,11 +265,9 @@ import { reactive, ref } from 'vue';
 import imgurl from '../assets/img/img.jpg';
 import { ElCard, ElMessage, ElMessageBox, ElTable } from "element-plus";
 import { useData } from 'element-plus/es/components/table-v2/src/composables';
+import { usePermissStore } from '../store/permiss';
+import { GetBaseInfoWhenLogin } from '../store/baseinfo';
 
-
-const chargeTabs = ref("first");
-const name = localStorage.getItem("ms_username");
-const role = "等级: " + (name === "admin" ? "超级管理员" : "普通用户");
 
 interface ChargeForm {
 	mode: string;
@@ -286,6 +306,69 @@ interface UserData {
 	updated_at: number;
 }
 
+interface Log {
+	/**
+	 * 充电经过的时间，充电经过的时间
+	 */
+	charging_duration: number;
+	/**
+	 * 充电费用，充电费用（电费）
+	 */
+	charging_fee: number;
+	/**
+	 * 充电桩id，充电桩id
+	 */
+	charging_pile_id: number;
+	/**
+	 * 充电量，充电量
+	 */
+	charging_power: number;
+	/**
+	 * 详单id，充电详单的id
+	 */
+	detail_id: number;
+	/**
+	 * 结束时间，结束时间
+	 */
+	end_time: number;
+	/**
+	 * 订单生成的时间，可以认为是用户提交充电请求的时间，存储为时间戳
+	 */
+	generate_time: number;
+	/**
+	 * 服务费用，服务费用
+	 */
+	service_fee: number;
+	/**
+	 * 充电开始的时间，充电开始的时间
+	 */
+	start_time: number;
+	/**
+	 * 订单当前的状态，如果是正在进行则为1，已经完成则为0
+	 */
+	status: number;
+	/**
+	 * 总费用
+	 */
+	total_fee: number;
+	/**
+	 * 用户id，用户id
+	 */
+	user_id: string;
+}
+
+interface CurChargeStatus {
+	charging_pile_id?: number;
+	charging_time?: number;
+	charging_type?: number;
+	created_at?: number;
+	queue_num?: string;
+	request_time?: number;
+	start_time?: number;
+	state: number;
+	time_duration?: number;
+}
+
 const chargePrice: ChargePrice = {
 	type: "line",
 	title: {
@@ -305,7 +388,6 @@ const chargePrice: ChargePrice = {
 	yEqual: 2,
 };
 
-
 for (let i = 0; i < 24; i++) {
 	chargePrice.labels.push(i.toString() + ":00-" + i.toString() + ":59");
 	chargePrice.datasets[0].data.push(i.valueOf() < 7 || i.valueOf() >= 23 ? 0.4 : i.valueOf() < 10 || i.valueOf() > 15 ? 0.7 : 1.0);
@@ -319,13 +401,6 @@ const chargeForm: ChargeForm = reactive({
 	custom: false,
 });
 
-const chargeSteps = reactive([
-	{ step: "提交充电请求" },
-	{ step: "等待系统分配排队号" },
-	{ step: "进入等待区等待叫号" },
-	{ step: "进入充电区进入待充电队列" },
-]);
-
 const costRules = reactive([
 	{ rule: "总费用 = 充电费 + 服务费" },
 	{ rule: "充电费 = 单位电价 * 充电度数" },
@@ -336,106 +411,7 @@ const costRules = reactive([
 	{ rule: "服务费单价：0.8 元/度" },
 ]);
 
-const chargeHistory = reactive([
-	{
-		record_id: "1",
-		request_id: "1",
-		charging_station_id: "1",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:00",
-		actual_power: "100",
-		service_fee: "10",
-		charging_fee: "100",
-		total_fee: "110",
-	},
-	{
-		record_id: "2",
-		request_id: "2",
-		charging_station_id: "2",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:01",
-		actual_power: "9100",
-		service_fee: "10",
-		charging_fee: "1100",
-		total_fee: "1110",
-	},
-	{
-		record_id: "3",
-		request_id: "3",
-		charging_station_id: "3",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:00",
-		actual_power: "100",
-		service_fee: "10",
-		charging_fee: "100",
-		total_fee: "110",
-	},
-	{
-		record_id: "4",
-		request_id: "4",
-		charging_station_id: "4",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:00",
-		actual_power: "100",
-		service_fee: "10",
-		charging_fee: "100",
-		total_fee: "110",
-	},
-	{
-		record_id: "5",
-		request_id: "5",
-		charging_station_id: "5",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:00",
-		actual_power: "100",
-		service_fee: "10",
-		charging_fee: "100",
-		total_fee: "110",
-	},
-	{
-		record_id: "6",
-		request_id: "6",
-		charging_station_id: "6",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:00",
-		actual_power: "100",
-		service_fee: "10",
-		charging_fee: "100",
-		total_fee: "110",
-	},
-	{
-		record_id: "7",
-		request_id: "7",
-		charging_station_id: "7",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:00",
-		actual_power: "100",
-		service_fee: "10",
-		charging_fee: "100",
-		total_fee: "110",
-	},
-	{
-		record_id: "8",
-		request_id: "8",
-		charging_station_id: "8",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:00",
-		actual_power: "100",
-		service_fee: "10",
-		charging_fee: "100",
-		total_fee: "110",
-	},
-	{
-		record_id: "9",
-		request_id: "9",
-		charging_station_id: "9",
-		start_time: "2021-05-01 12:00:00",
-		end_time: "2021-05-01 12:00:00",
-		actual_power: "100",
-		service_fee: "10",
-		charging_fee: "100",
-		total_fee: "110",
-	}
+const chargeHistory = reactive<Log[]>([
 ]);
 
 const chargeFormHoler: ChargeFormHoler = reactive({
@@ -455,6 +431,35 @@ const user_data = reactive<UserData>({
 	updated_at: 123456789,
 });
 
+async function QueryChargeStatus(token: string) {
+	const resp = await fetch("/user/charge/info?token=" + token, {
+		method: "GET",
+	}).then(async res => JSON.parse(await res.text()));
+
+	// console.log(resp)
+	curStatus.state = resp.data.state;
+	curStatus.charging_pile_id = resp.data.charging_pile_id;
+	curStatus.charging_time = resp.data.charging_time;
+	curStatus.charging_type = resp.data.charging_type;
+	curStatus.created_at = resp.data.created_at;
+	curStatus.queue_num = resp.data.queue_num;
+	curStatus.request_time = resp.data.request_time;
+	curStatus.start_time = resp.data.start_time;
+	curStatus.time_duration = resp.data.time_duration;
+}
+
+const chargeTabs = ref("first");
+const name = localStorage.getItem("ms_username");
+const role = "等级: " + (name === "admin" ? "超级管理员" : "普通用户");
+const waittingNum = ref("尚未进入排队队列")
+const tokenStr = localStorage.getItem("ms_token")
+const curStatus = reactive<CurChargeStatus>({
+	state: 0,
+});
+const timeInterval = 5000;
+// const timeId = setInterval(() => QueryChargeStatus(tokenStr === null ? "" : tokenStr), timeInterval);
+
+
 const user_info_str = localStorage.getItem("ms_user_info")
 if (user_info_str !== null) {
 	const user_info = JSON.parse(user_info_str)
@@ -468,7 +473,19 @@ if (user_info_str !== null) {
 	user_data.updated_at = user_info.updated_at
 }
 
+const charge_history_str = localStorage.getItem("ms_charge_history")
+if (charge_history_str !== null) {
+	const charge_history_json = JSON.parse(charge_history_str)
+	charge_history_json.forEach((item: any) => {
+		chargeHistory.push(item)
+	})
+}
 
+function formatUnixTimestamp(unixTimestamp: number): string {
+	const date = new Date(unixTimestamp * 1000); // 将 Unix 时间戳转换为毫秒级时间戳
+	const formattedDate = date.toLocaleString(); // 使用默认的日期和时间格式进行格式化
+	return formattedDate;
+}
 
 const isEmpty = (str: any): boolean => {
 	if (str === null || str === '' || str === undefined || str.length === 0) {
@@ -477,6 +494,19 @@ const isEmpty = (str: any): boolean => {
 		return false;
 	}
 };
+
+const onChargeStatusChange = (status: number) => {
+	if (status == 0) {
+		waittingNum.value = "尚未进入排队队列"
+	} else if (status == 1) {
+		waittingNum.value = curStatus.queue_num === undefined ? "正在等待" : curStatus.queue_num
+	}
+	else if (status == 3) {
+		waittingNum.value = "正在充电"
+	} else if (status == 4) {
+		waittingNum.value = "尚未进入排队队列"
+	}
+}
 
 const onSwitchChange = (on: boolean) => {
 	if (on) {
@@ -531,11 +561,25 @@ const onPostChargeRequest = () => {
 			cancelButtonText: '取消',
 			dangerouslyUseHTMLString: true,
 			type: 'warning',
-		}).then(() => {
+		}).then(async () => {
+			const data = new FormData();
+			data.append("mode", chargeForm.mode);
+
+			if (chargeForm.custom && chargeForm.timeHour != null && chargeForm.timeMinute != null)
+				data.append("time", ((chargeForm.timeHour * 60 + chargeForm.timeMinute) * 60).toString());
+			else
+				data.append("time", "-1")
+
+			const resp = await fetch("/user/charge/apply?token=" + tokenStr, {
+				method: "POST",
+				body: data,
+			}).then(async res => JSON.parse(await res.text()));
+
 			ElMessage({
-				type: 'success',
-				message: '已发起充电请求',
+				type: "success",
+				message: resp.msg,
 			});
+			// waittingNum.value = resp.data
 		}).catch(() => {
 			ElMessage({
 				type: 'info',
@@ -552,11 +596,24 @@ const onPostChargeRequest = () => {
 }
 
 const onChangeOrder = () => {
+	if (curStatus.state !== 0) {
+		ElMessage({
+			type: 'info',
+			message: '暂无进行中的订单或已进入充电区，订单无法修改，只能取消',
+		});
+		return
+	}
 	ElMessageBox.confirm('还没写', '提示', {
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning',
 	}).then(() => {
+
+		// const resp = await fetch("/user/charge/modify?token=" + tokenStr, {
+		// 	method: "POST",
+		// }).then(async res => JSON.parse(await res.text()));
+
+
 		ElMessage({
 			type: 'success',
 			message: '已修改订单',
@@ -568,16 +625,30 @@ const onChangeOrder = () => {
 		});
 	})
 };
+
 const onCancelOrder = () => {
-	// cancelDialogVisible.value = true;
 	ElMessageBox.confirm('取消订单后再次发出请求需要重新排队, 是否继续?', '警告', {
 		confirmButtonText: '确定',
 		cancelButtonText: '取消',
 		type: 'warning',
-	}).then(() => {
+	}).then(async () => {
+
+		const resp = await fetch("/user/charge/cancel?token=" + tokenStr, {
+			method: "POST",
+		}).then(async res => JSON.parse(await res.text()));
+
+		if (resp.code !== 200) {
+			ElMessage({
+				type: 'error',
+				message: resp.msg,
+			});
+			return
+		}
+
+		// waittingNum.value = "尚未进入排队队列"
 		ElMessage({
 			type: 'success',
-			message: '已取消订单',
+			message: resp.msg,
 		});
 	}).catch(() => {
 		ElMessage({

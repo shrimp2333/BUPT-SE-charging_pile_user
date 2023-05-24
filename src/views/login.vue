@@ -38,6 +38,8 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { Lock, User } from '@element-plus/icons-vue';
+import { compose } from 'element-plus/es/components/table/src/util';
+import { GetBaseInfoWhenLogin } from '../store/baseinfo';
 
 interface LoginInfo {
 	username: string;
@@ -75,31 +77,26 @@ const submitForm = (formEl: FormInstance | undefined) => {
 				method: "POST",
 				body: data,
 			}).then(async res => JSON.parse(await res.text()));
-			console.log(resp);
+			console.log(resp.msg);
 
 			if (resp.code != 200) {
 				ElMessage.error(resp.msg);
 				return false;
 			}
 
-			// ElMessage.success(resp.msg);
 			localStorage.setItem('ms_token', resp.token);
+			ElMessage.success(resp.msg);
 
-			// 获取用户信息
-			const resp_info = await fetch("/user/detail/?token=" + resp.token, {
-				method: "GET",
-			}).then(async res => JSON.parse(await res.text()));
+			GetBaseInfoWhenLogin(resp.token);
 
-			if (resp_info.code != 200) {
-				ElMessage.error(resp_info.msg);
-				return false;
-			}
-			ElMessage.success(resp_info.msg);
-			localStorage.setItem("ms_user_info", JSON.stringify(resp_info.data))
+			const keys = permiss.defaultList['user'];
+			permiss.handleSet(keys);
+			localStorage.setItem('ms_keys', JSON.stringify(keys));
+
 
 			router.push('/');
 		} else {
-			ElMessage.error('登录成功');
+			ElMessage.error('登录失败');
 			return false;
 		}
 	});

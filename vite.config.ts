@@ -11,7 +11,6 @@ export default defineConfig({
 	server: {
 		// 跨域的写法
 		proxy: {
-			// '/u',
 			'/u': {
 				target: baseURL, // 实际请求地址
 				changeOrigin: true,
