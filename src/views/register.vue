@@ -20,7 +20,7 @@
                 <el-row>
                     <el-col :span="10">
                         <el-form-item label="密码" prop="password">
-                            <el-input v-model="param.username" placeholder="username"></el-input>
+                            <el-input v-model="param.password" placeholder="username"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="4"></el-col>
@@ -78,12 +78,12 @@ interface RegisterInfo {
 const router = useRouter();
 const isAgreement = ref<boolean>(false);
 const param = reactive<RegisterInfo>({
-    username: "",
-    email: '',
-    password: "",
-    enpassword: "",
-    license: "",
-    battery: null,
+    username: "test",
+    email: 'test@test.com',
+    password: "123456",
+    enpassword: "123456",
+    license: "123456",
+    battery: 123456,
 });
 
 const rules: FormRules = {
@@ -102,8 +102,26 @@ const rules: FormRules = {
         },
         { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
     ],
-    password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-    enpassword: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+    password: [{
+        required: true, trigger: 'blur', validator: (rule, value, callback) => {
+            if (value.length < 6) {
+                callback(new Error('密码长度不能小于6位'));
+            } else {
+                callback();
+            }
+        }
+    }],
+    enpassword: [{
+        required: true, trigger: 'blur', validator: (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('请再次输入密码'))
+            } else if (value !== param.password) {
+                callback(new Error('两次输入密码不一致!'))
+            } else {
+                callback()
+            }
+        }
+    }],
     license: [{ required: false, message: '请输入车牌号', trigger: 'blur' }],
     battery: [{ required: true, message: '请输入电池容量', trigger: 'blur' }],
 };
@@ -117,15 +135,30 @@ const submitForm = (formEl: FormInstance | undefined) => {
         ElMessage.error('请先同意服务条款');
         return false;
     }
-    formEl.validate((valid: boolean) => {
+    formEl.validate(async (valid: boolean) => {
         if (valid) {
-            ElMessage.success('注册成功(TODO: 真正向后端发送请求)');
+            const data = new FormData()
+            data.append('username', param.username)
+            data.append('email', param.email)
+            data.append('password', param.password)
+            data.append('enpassword', param.enpassword)
+            data.append('license_plate', param.license)
+            if (param.battery !== null)
+                data.append('battery_capacity', param.battery.toString())
+            console.log(data)
+            const resp = await fetch("/u/register", {
+                method: "POST",
+                body: data,
+            }).then(async res => JSON.parse(await res.text()));
 
-
-            localStorage.setItem('ms_username', param.username);
-            const keys = permiss.defaultList[param.username == 'admin' ? 'admin' : 'user'];
-            permiss.handleSet(keys);
-            localStorage.setItem('ms_keys', JSON.stringify(keys));
+            console.log(resp)
+            console.log(resp.token)
+            localStorage.setItem('ms_token', resp.token)
+            // localStorage.setItem('ms_username', param.username);
+            // const keys = permiss.defaultList[param.username == 'admin' ? 'admin' : 'user'];
+            // permiss.handleSet(keys);
+            // localStorage.setItem('ms_keys', JSON.stringify(keys));
+            ElMessage.success(resp.msg);
             router.push('/');
         } else {
             ElMessage.error('注册失败');

@@ -64,16 +64,38 @@ const permiss = usePermissStore();
 const login = ref<FormInstance>();
 const submitForm = (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
-	formEl.validate((valid: boolean) => {
+	formEl.validate(async (valid: boolean) => {
 		if (valid) {
-			ElMessage.success('登录成功');
-			localStorage.setItem('ms_username', param.username);
-			const keys = permiss.defaultList[param.username == 'admin' ? 'admin' : 'user'];
-			permiss.handleSet(keys);
-			localStorage.setItem('ms_keys', JSON.stringify(keys));
-
-			// TODO: 发送请求，验证并获取用户信息以及token、
 			// 存储用户信息和token
+			const data = new FormData();
+			data.append('username', param.username);
+			data.append('password', param.password);
+
+			const resp = await fetch("/u/login", {
+				method: "POST",
+				body: data,
+			}).then(async res => JSON.parse(await res.text()));
+			console.log(resp);
+
+			if (resp.code != 200) {
+				ElMessage.error(resp.msg);
+				return false;
+			}
+
+			ElMessage.success(resp.msg);
+			localStorage.setItem('ms_token', resp.token);
+
+			// 获取用户信息
+			const resp_info = await fetch("/user/detail/?" + resp.token, {
+				method: "GET",
+			}).then(async res => JSON.parse(await res.text()));
+
+			if (resp_info.code != 200) {
+				ElMessage.error(resp_info.msg);
+				return false;
+			}
+			ElMessage.success(resp_info.msg);
+			localStorage.setItem("ms_user_info", JSON.stringify(resp_info.data))
 
 			router.push('/');
 		} else {

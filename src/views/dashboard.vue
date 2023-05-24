@@ -242,11 +242,12 @@ import Schart from 'vue-schart';
 import { reactive, ref } from 'vue';
 import imgurl from '../assets/img/img.jpg';
 import { ElCard, ElMessage, ElMessageBox, ElTable } from "element-plus";
+import { useData } from 'element-plus/es/components/table-v2/src/composables';
 
 
 const chargeTabs = ref("first");
 const name = localStorage.getItem("ms_username");
-const role = "(等级:)" + (name === "admin" ? "超级管理员" : "普通用户");
+const role = "等级: " + (name === "admin" ? "超级管理员" : "普通用户");
 
 interface ChargeForm {
 	mode: string;
@@ -445,7 +446,7 @@ const chargeFormHoler: ChargeFormHoler = reactive({
 
 const user_data = reactive<UserData>({
 	user_id: "1",
-	user_name: "user001",
+	user_name: "user007",
 	email: "123@gmail.com",
 	license_plate: "TS1234",
 	car_type: "教练车",
@@ -453,6 +454,21 @@ const user_data = reactive<UserData>({
 	created_at: 123456789,
 	updated_at: 123456789,
 });
+
+const user_info_str = localStorage.getItem("ms_user_info")
+if (user_info_str !== null) {
+	const user_info = JSON.parse(user_info_str)
+	user_data.user_id = user_info.user_id
+	user_data.user_name = user_info.user_name
+	user_data.email = user_info.email
+	user_data.license_plate = user_info.license_plate
+	user_data.car_type = user_info.car_type
+	user_data.battery_capacity = user_info.battery_capacity
+	user_data.created_at = user_info.created_at
+	user_data.updated_at = user_info.updated_at
+}
+
+
 
 const isEmpty = (str: any): boolean => {
 	if (str === null || str === '' || str === undefined || str.length === 0) {
@@ -475,6 +491,33 @@ const onSwitchChange = (on: boolean) => {
 		chargeFormHoler.Quantity = null;
 		chargeFormHoler.TimeHolder = "已选择一键充满";
 		chargeFormHoler.QuantityHolder = "已选择一键充满";
+	}
+};
+
+
+const onChargeFormInput = () => {
+	if (!isEmpty(chargeForm.timeMinute) && chargeForm.timeMinute != null) {
+		if (chargeForm.timeMinute > 59)
+			chargeForm.timeMinute = 59;
+		else if (chargeForm.timeMinute < 0)
+			chargeForm.timeMinute = 0;
+	}
+	if (!isEmpty(chargeForm.timeHour) && chargeForm.timeHour != null) {
+		if (chargeForm.timeHour > 23)
+			chargeForm.timeHour = 23;
+		else if (chargeForm.timeHour < 0)
+			chargeForm.timeHour = 0;
+	}
+	if (chargeForm.mode === "fast") {
+		if (!isEmpty(chargeForm.timeHour) && !isEmpty(chargeForm.timeMinute) && chargeForm.timeMinute != null && chargeForm.timeHour != null)
+			chargeFormHoler.Quantity = (chargeForm.timeHour + chargeForm.timeMinute / 60) * 30;
+		else
+			chargeFormHoler.Quantity = null;
+	} else if (chargeForm.mode === "slow") {
+		if (!isEmpty(chargeForm.timeHour) && !isEmpty(chargeForm.timeMinute) && chargeForm.timeMinute != null && chargeForm.timeHour != null)
+			chargeFormHoler.Quantity = (chargeForm.timeHour + chargeForm.timeMinute / 60) * 7;
+		else
+			chargeFormHoler.Quantity = null;
 	}
 };
 
@@ -507,32 +550,6 @@ const onPostChargeRequest = () => {
 		})
 	}
 }
-
-const onChargeFormInput = () => {
-	if (!isEmpty(chargeForm.timeMinute) && chargeForm.timeMinute != null) {
-		if (chargeForm.timeMinute > 59)
-			chargeForm.timeMinute = 59;
-		else if (chargeForm.timeMinute < 0)
-			chargeForm.timeMinute = 0;
-	}
-	if (!isEmpty(chargeForm.timeHour) && chargeForm.timeHour != null) {
-		if (chargeForm.timeHour > 23)
-			chargeForm.timeHour = 23;
-		else if (chargeForm.timeHour < 0)
-			chargeForm.timeHour = 0;
-	}
-	if (chargeForm.mode === "fast") {
-		if (!isEmpty(chargeForm.timeHour) && !isEmpty(chargeForm.timeMinute) && chargeForm.timeMinute != null && chargeForm.timeHour != null)
-			chargeFormHoler.Quantity = (chargeForm.timeHour + chargeForm.timeMinute / 60) * 30;
-		else
-			chargeFormHoler.Quantity = null;
-	} else if (chargeForm.mode === "slow") {
-		if (!isEmpty(chargeForm.timeHour) && !isEmpty(chargeForm.timeMinute) && chargeForm.timeMinute != null && chargeForm.timeHour != null)
-			chargeFormHoler.Quantity = (chargeForm.timeHour + chargeForm.timeMinute / 60) * 7;
-		else
-			chargeFormHoler.Quantity = null;
-	}
-};
 
 const onChangeOrder = () => {
 	ElMessageBox.confirm('还没写', '提示', {
