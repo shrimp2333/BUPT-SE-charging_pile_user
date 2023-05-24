@@ -82,11 +82,11 @@ const submitForm = (formEl: FormInstance | undefined) => {
 				return false;
 			}
 
-			ElMessage.success(resp.msg);
+			// ElMessage.success(resp.msg);
 			localStorage.setItem('ms_token', resp.token);
 
 			// 获取用户信息
-			const resp_info = await fetch("/user/detail/?" + resp.token, {
+			const resp_info = await fetch("/user/detail/?token=" + resp.token, {
 				method: "GET",
 			}).then(async res => JSON.parse(await res.text()));
 
