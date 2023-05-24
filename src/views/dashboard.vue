@@ -256,6 +256,38 @@
 				<schart ref="bar" class="schart" canvasId="bar" :options="chargePrice"></schart>
 			</el-card>
 		</el-row>
+		<!-- 对话框组件 -->
+		<el-dialog title="提示" v-model="requestChangeDialog" width="30%" center>
+			<el-form :model="changeChargeRequestForm">
+				<el-form-item label="修改内容" style="font-size: 20px;">
+					<el-select v-model="changeChargeRequestForm.changeContent" placeholder="请选择要修改的内容"
+						@change="onChangeContentChange">
+						<el-option label="充电模式" value="mode"></el-option>
+						<el-option label="充电时间" value="time"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="选择模式" style="font-size: 20px;">
+					<el-select v-model="changeChargeRequestForm.mode" placeholder="请选择充电模式"
+						:disabled="!changeChargeRequestForm.isChangeMode">
+						<el-option label="⚡快充(30度/h)" value="fast"></el-option>
+						<el-option label="🌞慢充(7度/h)" value="slow"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-input v-model.number="changeChargeRequestForm.timeHour" :placeholder="`请输入充电时长`" :min="0" type="number"
+					style="width: 100%" :disabled="changeChargeRequestForm.isChangeMode"
+					@input="onChangeContentChange"><template #prepend>小时:</template></el-input>
+				<el-input v-model.number="changeChargeRequestForm.timeMinute" :placeholder="`请输入充电时长`" :min="0" :max="59"
+					type="number" style="width: 100%" :disabled="changeChargeRequestForm.isChangeMode"
+					@input="onChangeContentChange"><template #prepend>分钟:</template></el-input>
+			</el-form>
+
+			<template #footer>
+				<span class="dialog-footer">
+					<el-button @click="requestChangeDialog = false">取 消</el-button>
+					<el-button type="primary" @click="onChangeOrderPost">确 定</el-button>
+				</span>
+			</template>
+		</el-dialog>
 	</div>
 </template>
 
@@ -275,6 +307,15 @@ interface ChargeForm {
 	timeMinute: number | null;
 	custom: boolean;
 }
+
+interface ChangeChargeRequestForm {
+	mode: string;
+	timeHour: number | null;
+	timeMinute: number | null;
+	changeContent: string;
+	isChangeMode: boolean;
+}
+
 
 interface ChargePrice {
 	type: string;
@@ -401,6 +442,14 @@ const chargeForm: ChargeForm = reactive({
 	custom: false,
 });
 
+const changeChargeRequestForm: ChangeChargeRequestForm = reactive({
+	mode: "",
+	timeHour: null,
+	timeMinute: null,
+	changeContent: "",
+	isChangeMode: false,
+});
+
 const costRules = reactive([
 	{ rule: "总费用 = 充电费 + 服务费" },
 	{ rule: "充电费 = 单位电价 * 充电度数" },
@@ -454,10 +503,11 @@ const role = "等级: " + (name === "admin" ? "超级管理员" : "普通用户"
 const waittingNum = ref("尚未进入排队队列")
 const tokenStr = localStorage.getItem("ms_token")
 const curStatus = reactive<CurChargeStatus>({
-	state: 0,
+	state: -1,
 });
 const timeInterval = 5000;
-// const timeId = setInterval(() => QueryChargeStatus(tokenStr === null ? "" : tokenStr), timeInterval);
+const requestChangeDialog = ref<boolean>(false);
+const timeId = setInterval(() => QueryChargeStatus(tokenStr === null ? "" : tokenStr), timeInterval);
 
 
 const user_info_str = localStorage.getItem("ms_user_info")
@@ -551,6 +601,28 @@ const onChargeFormInput = () => {
 	}
 };
 
+const onChangeContentChange = () => {
+	changeChargeRequestForm.isChangeMode = changeChargeRequestForm.changeContent === 'mode';
+	if (changeChargeRequestForm.isChangeMode) {
+		changeChargeRequestForm.timeHour = null;
+		changeChargeRequestForm.timeMinute = null;
+	} else {
+		changeChargeRequestForm.mode = "";
+	}
+	if (!isEmpty(changeChargeRequestForm.timeMinute) && changeChargeRequestForm.timeMinute != null) {
+		if (changeChargeRequestForm.timeMinute > 59)
+			changeChargeRequestForm.timeMinute = 59;
+		else if (changeChargeRequestForm.timeMinute < 0)
+			changeChargeRequestForm.timeMinute = 0;
+	}
+	if (!isEmpty(changeChargeRequestForm.timeHour) && changeChargeRequestForm.timeHour != null) {
+		if (changeChargeRequestForm.timeHour > 23)
+			changeChargeRequestForm.timeHour = 23;
+		else if (changeChargeRequestForm.timeHour < 0)
+			changeChargeRequestForm.timeHour = 0;
+	}
+};
+
 const onPostChargeRequest = () => {
 	if (!isEmpty(chargeForm.mode) && (!chargeForm.custom || (!isEmpty(chargeForm.timeHour) && !isEmpty(chargeForm.timeMinute)))) {
 		const info: string = "充电模式: " + (chargeForm.mode === "fast" ? "快充" : "慢充") +
@@ -603,28 +675,34 @@ const onChangeOrder = () => {
 		});
 		return
 	}
-	ElMessageBox.confirm('还没写', '提示', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
-		type: 'warning',
-	}).then(() => {
-
-		// const resp = await fetch("/user/charge/modify?token=" + tokenStr, {
-		// 	method: "POST",
-		// }).then(async res => JSON.parse(await res.text()));
-
-
-		ElMessage({
-			type: 'success',
-			message: '已修改订单',
-		});
-	}).catch(() => {
-		ElMessage({
-			type: 'info',
-			message: '未修改订单',
-		});
-	})
+	requestChangeDialog.value = true;
 };
+
+const onChangeOrderPost = async () => {
+	const data = new FormData();
+	if (changeChargeRequestForm.isChangeMode)
+		data.append("mode", changeChargeRequestForm.mode);
+	else if (changeChargeRequestForm.timeHour != null && changeChargeRequestForm.timeMinute != null)
+		data.append("time", ((changeChargeRequestForm.timeHour * 60 + changeChargeRequestForm.timeMinute) * 60).toString());
+
+	const resp = await fetch("/user/charge/modify?token=" + tokenStr, {
+		method: "POST",
+		body: data,
+	}).then(async res => JSON.parse(await res.text()));
+
+	if (resp.code !== 200) {
+		ElMessage({
+			type: 'error',
+			message: resp.msg,
+		});
+		return
+	}
+	ElMessage({
+		type: 'success',
+		message: resp.msg,
+	});
+	requestChangeDialog.value = false;
+}
 
 const onCancelOrder = () => {
 	ElMessageBox.confirm('取消订单后再次发出请求需要重新排队, 是否继续?', '警告', {
