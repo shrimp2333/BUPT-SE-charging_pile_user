@@ -12,7 +12,7 @@
                     <el-col :span="4"></el-col>
                     <el-col :span="10">
                         <el-form-item label="邮箱" prop="email">
-                            <el-input typ="email" placeholder="email" v-model="param.email"
+                            <el-input type="email" placeholder="email" v-model="param.email"
                                 @keyup.enter="submitForm(login)"></el-input>
                         </el-form-item>
                     </el-col>
