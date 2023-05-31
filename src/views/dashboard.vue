@@ -29,7 +29,7 @@
 										<el-row style="margin-bottom: -4%;">
 											<el-col :span="12">
 												<el-form-item label="详单id  ">
-													<span>{{ props.row.detail_id }}</span>
+													<span>{{ props.row.request_id }}</span>
 												</el-form-item>
 											</el-col>
 											<el-col :span="12">
@@ -90,7 +90,7 @@
 								</el-card>
 							</template>
 						</el-table-column>
-						<el-table-column label="订单号" prop="detail_id" sortable> </el-table-column>
+						<el-table-column label="订单号" prop="request_id" sortable> </el-table-column>
 						<el-table-column label="充电量" prop="charging_power" sortable>
 							<template #default="props">
 								<el-tag type="success">{{ props.row.charging_power }}</el-tag>
