@@ -20,13 +20,13 @@
                 <el-row>
                     <el-col :span="10">
                         <el-form-item label="密码" prop="password">
-                            <el-input v-model="param.password" placeholder="username"></el-input>
+                            <el-input type="password" v-model="param.password" placeholder="username"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="4"></el-col>
                     <el-col :span="10">
                         <el-form-item label="确认密码" prop="enpassword">
-                            <el-input type="password" placeholder="ensure password" v-model="param.enpassword"
+                            <el-input type="password" v-model="param.enpassword" placeholder="ensure password"
                                 @keyup.enter="submitForm(login)"></el-input>
                         </el-form-item>
                     </el-col>
@@ -79,12 +79,18 @@ interface RegisterInfo {
 const router = useRouter();
 const isAgreement = ref<boolean>(false);
 const param = reactive<RegisterInfo>({
-    username: "test",
-    email: 'test@test.com',
-    password: "123456",
-    enpassword: "123456",
-    license: "123456",
-    battery: 123456,
+    // username: "test",
+    // email: 'test@test.com',
+    // password: "123456",
+    // enpassword: "123456",
+    // license: "123456",
+    // battery: 123456,
+    username: '',
+    email: '',
+    password: '',
+    enpassword: '',
+    license: '',
+    battery: null,
 });
 
 const rules: FormRules = {

@@ -13,7 +13,7 @@
 }
 
 .plugins-tips a {
-    color: #fffb20;
+    color: #48c9afc6;
 }
 
 .tags-li.active {
@@ -28,6 +28,6 @@
 }
 
 .collapse-btn:hover {
-    background: rgb(231, 215, 35);
+    background: #63b8a7;
     /* rgb(40, 52, 70); */
 }

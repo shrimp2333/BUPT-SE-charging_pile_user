@@ -481,11 +481,21 @@ const user_data = reactive<UserData>({
 });
 
 async function QueryChargeStatus(token: string) {
+	// refreshUserInfo()
+	if (localStorage.getItem("ms_token") === null || localStorage.getItem("ms_token") === undefined || localStorage.getItem("ms_token") === "") {
+		return;
+	}
+
 	const resp = await fetch("/user/charge/info?token=" + token, {
 		method: "GET",
 	}).then(async res => JSON.parse(await res.text()));
 
-	// console.log(resp)
+	if (resp.code !== 200) {
+		ElMessage.error(resp.msg);
+		return;
+	}
+
+	console.log(resp)
 	curStatus.state = resp.data.state;
 	curStatus.charging_pile_id = resp.data.charging_pile_id;
 	curStatus.charging_time = resp.data.charging_time;
@@ -495,6 +505,21 @@ async function QueryChargeStatus(token: string) {
 	curStatus.request_time = resp.data.request_time;
 	curStatus.start_time = resp.data.start_time;
 	curStatus.time_duration = resp.data.time_duration;
+}
+
+function refreshUserInfo() {
+	const user_info_str = localStorage.getItem("ms_user_info")
+	if (user_info_str !== null) {
+		const user_info = JSON.parse(user_info_str)
+		user_data.user_id = user_info.user_id
+		user_data.user_name = user_info.user_name
+		user_data.email = user_info.email
+		user_data.license_plate = user_info.license_plate
+		user_data.car_type = user_info.car_type
+		user_data.battery_capacity = user_info.battery_capacity
+		user_data.created_at = user_info.created_at
+		user_data.updated_at = user_info.updated_at
+	}
 }
 
 const chargeTabs = ref("first");
@@ -508,20 +533,8 @@ const curStatus = reactive<CurChargeStatus>({
 const timeInterval = 5000;
 const requestChangeDialog = ref<boolean>(false);
 const timeId = setInterval(() => QueryChargeStatus(tokenStr === null ? "" : tokenStr), timeInterval);
+refreshUserInfo();
 
-
-const user_info_str = localStorage.getItem("ms_user_info")
-if (user_info_str !== null) {
-	const user_info = JSON.parse(user_info_str)
-	user_data.user_id = user_info.user_id
-	user_data.user_name = user_info.user_name
-	user_data.email = user_info.email
-	user_data.license_plate = user_info.license_plate
-	user_data.car_type = user_info.car_type
-	user_data.battery_capacity = user_info.battery_capacity
-	user_data.created_at = user_info.created_at
-	user_data.updated_at = user_info.updated_at
-}
 
 const charge_history_str = localStorage.getItem("ms_charge_history")
 if (charge_history_str !== null) {
@@ -635,7 +648,7 @@ const onPostChargeRequest = () => {
 			type: 'warning',
 		}).then(async () => {
 			const data = new FormData();
-			data.append("mode", chargeForm.mode);
+			data.append("mode", chargeForm.mode === "slow" ? '0' : '1');
 
 			if (chargeForm.custom && chargeForm.timeHour != null && chargeForm.timeMinute != null)
 				data.append("time", ((chargeForm.timeHour * 60 + chargeForm.timeMinute) * 60).toString());
@@ -681,7 +694,7 @@ const onChangeOrder = () => {
 const onChangeOrderPost = async () => {
 	const data = new FormData();
 	if (changeChargeRequestForm.isChangeMode)
-		data.append("mode", changeChargeRequestForm.mode);
+		data.append("mode", changeChargeRequestForm.mode === "slow" ? '0' : '1');
 	else if (changeChargeRequestForm.timeHour != null && changeChargeRequestForm.timeMinute != null)
 		data.append("time", ((changeChargeRequestForm.timeHour * 60 + changeChargeRequestForm.timeMinute) * 60).toString());
 
@@ -735,6 +748,7 @@ const onCancelOrder = () => {
 		});
 	});
 };
+
 </script>
 
 <style scoped>

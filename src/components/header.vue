@@ -46,6 +46,7 @@ import { useSidebarStore } from '../store/sidebar';
 import { useRouter } from 'vue-router';
 import imgurl from '../assets/img/img.jpg';
 import user_data from '../views/dashboard.vue';
+// import tokenStr from '../views/dashboard.vue';
 
 const username: string | null = user_data.username;
 const message: number = 2;

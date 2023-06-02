@@ -5,7 +5,7 @@ import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 
-const baseURL: string = 'http://127.0.0.1:9321'
+const baseURL: string = 'http://43.138.43.19:8080' //'http://127.0.0.1:9321'
 
 export default defineConfig({
 	server: {

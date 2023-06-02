@@ -40,6 +40,8 @@ import type { FormInstance, FormRules } from 'element-plus';
 import { Lock, User } from '@element-plus/icons-vue';
 import { compose } from 'element-plus/es/components/table/src/util';
 import { GetBaseInfoWhenLogin } from '../store/baseinfo';
+import refreshUserInfo from '../views/dashboard.vue';
+import user_data from '../views/dashboard.vue';
 
 interface LoginInfo {
 	username: string;
@@ -48,8 +50,8 @@ interface LoginInfo {
 
 const router = useRouter();
 const param = reactive<LoginInfo>({
-	username: 'admin',
-	password: '123123'
+	username: 'zhangsan',
+	password: '123456'
 });
 
 const rules: FormRules = {
@@ -87,12 +89,11 @@ const submitForm = (formEl: FormInstance | undefined) => {
 			localStorage.setItem('ms_token', resp.token);
 			ElMessage.success(resp.msg);
 
-			GetBaseInfoWhenLogin(resp.token);
+			await GetBaseInfoWhenLogin(resp.token);
 
 			const keys = permiss.defaultList['user'];
 			permiss.handleSet(keys);
 			localStorage.setItem('ms_keys', JSON.stringify(keys));
-
 
 			router.push('/');
 		} else {

@@ -141,6 +141,7 @@ import 'cropperjs/dist/cropper.css';
 import avatar from '../assets/img/img.jpg';
 import user_data from './dashboard.vue';
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
+import { GetBaseInfoWhenLogin } from '../store/baseinfo';
 
 interface NewPasswordForm {
 	old: string;
@@ -252,19 +253,19 @@ const onChangePasswordSubmit = async (formEl: FormInstance | undefined) => {
 const onModifyInfoSubmit = async () => {
 	const data = new FormData();
 	let flag = false;
-	if (new_info_form.new_username !== '') {
+	if (new_info_form.new_username != '') {
 		data.append("username", new_info_form.new_username);
 		flag = true;
 	}
-	if (new_info_form.new_license !== '') {
+	if (new_info_form.new_license != '') {
 		data.append("license_plate", new_info_form.new_license);
 		flag = true;
 	}
-	if (new_info_form.new_battery_capacity !== null) {
+	if (new_info_form.new_battery_capacity != null) {
 		data.append("battery_capacity", new_info_form.new_battery_capacity?.toString() || '');
 		flag = true;
 	}
-	if (new_info_form.new_car_type !== '') {
+	if (new_info_form.new_car_type != '') {
 		data.append("car_type", new_info_form.new_car_type);
 		flag = true;
 	}
@@ -289,6 +290,8 @@ const onModifyInfoSubmit = async () => {
 	new_info_form.new_license = '';
 	new_info_form.new_battery_capacity = null;
 	new_info_form.new_car_type = '';
+
+	await GetBaseInfoWhenLogin(tokenStr || '');
 };
 
 const avatarImg = ref(avatar);
