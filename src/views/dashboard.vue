@@ -204,21 +204,27 @@
 							<!-- TODO: 完善逻辑 -->
 							<el-card shadow="hover">
 								<el-row style="margin-bottom: 0%;">
-									<el-col :span="8">订单号:
+									<el-col :span="6">订单号:
 										<span style="color: blue;">
 											{{ curStatus.state === -1 ? "暂无进行中的订单" : curStatus.charging_pile_id }}
 										</span>
 									</el-col>
-									<el-col :span="8">充电模式:
+									<el-col :span="6">等待人数:
+										<span style="color: rgba(2, 195, 47, 0.668);">
+											{{ curStatus.state === -1 ? "暂无进行中的订单" : curStatus.cars_num_in_front }}
+										</span>
+									</el-col>
+									<el-col :span="6">充电模式:
 										<span style="color: red;">
 											{{ curStatus.state === -1 ? "暂无进行中的订单" : curStatus.charging_type === 1 ?
 												"⚡快充模式" : "慢充模式" }}
 										</span>
 									</el-col>
-									<el-col :span="8">充电时间:
+									<el-col :span="6">充电时间:
 										<span style="color: orange;">
-											{{ curStatus.state === -1 ? "暂无进行中的订单" : curStatus.charging_time +
-												" min" }}
+											{{ curStatus.state === -1 ? "暂无进行中的订单"
+												: curStatus.charging_time === undefined ? "正在充电" :
+													curStatus.charging_time / 60 + " min" }}
 										</span>
 									</el-col>
 								</el-row>
@@ -408,6 +414,7 @@ interface CurChargeStatus {
 	start_time?: number;
 	state: number;
 	time_duration?: number;
+	cars_num_in_front?: number;
 }
 
 const chargePrice: ChargePrice = {
@@ -460,8 +467,7 @@ const costRules = reactive([
 	{ rule: "服务费单价：0.8 元/度" },
 ]);
 
-const chargeHistory = reactive<Log[]>([
-]);
+const chargeHistory = reactive<Log[]>([]);
 
 const chargeFormHoler: ChargeFormHoler = reactive({
 	TimeHolder: chargeForm.custom ? "请输入充电时长" : "已选择一键充满",
@@ -505,6 +511,7 @@ async function QueryChargeStatus(token: string) {
 	curStatus.request_time = resp.data.request_time;
 	curStatus.start_time = resp.data.start_time;
 	curStatus.time_duration = resp.data.time_duration;
+	curStatus.cars_num_in_front = resp.data.cars_num_in_front;
 }
 
 function refreshUserInfo() {
@@ -532,7 +539,7 @@ const curStatus = reactive<CurChargeStatus>({
 });
 const timeInterval = 5000;
 const requestChangeDialog = ref<boolean>(false);
-// const timeId = setInterval(() => QueryChargeStatus(tokenStr === null ? "" : tokenStr), timeInterval);
+const timeId = setInterval(() => QueryChargeStatus(tokenStr === null ? "" : tokenStr), timeInterval);
 refreshUserInfo();
 
 
