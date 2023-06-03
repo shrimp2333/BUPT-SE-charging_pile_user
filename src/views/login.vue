@@ -91,7 +91,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
 
 			await GetBaseInfoWhenLogin(resp.token);
 
-			const keys = permiss.defaultList['user'];
+			const keys = permiss.defaultList['admin'];
 			permiss.handleSet(keys);
 			localStorage.setItem('ms_keys', JSON.stringify(keys));
 

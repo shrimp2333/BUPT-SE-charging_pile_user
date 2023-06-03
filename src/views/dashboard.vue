@@ -532,7 +532,7 @@ const curStatus = reactive<CurChargeStatus>({
 });
 const timeInterval = 5000;
 const requestChangeDialog = ref<boolean>(false);
-const timeId = setInterval(() => QueryChargeStatus(tokenStr === null ? "" : tokenStr), timeInterval);
+// const timeId = setInterval(() => QueryChargeStatus(tokenStr === null ? "" : tokenStr), timeInterval);
 refreshUserInfo();
 
 
