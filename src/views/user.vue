@@ -211,7 +211,7 @@ const user_info_str = localStorage.getItem("ms_user_info")
 if (user_info_str !== null) {
 	const user_info = JSON.parse(user_info_str)
 	user_data.user_id = user_info.user_id
-	user_data.user_name = user_info.user_name
+	user_data.user_name = user_info.username
 	user_data.email = user_info.email
 	user_data.license_plate = user_info.license_plate
 	user_data.car_type = user_info.car_type
