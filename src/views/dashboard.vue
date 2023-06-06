@@ -236,7 +236,7 @@
 											{{ curStatus.state === -1 ? "暂无进行中的订单" : curStatus.charging_time === undefined ?
 												"正在充电" :
 												(Math.round(curStatus.charging_time * (curStatus.charging_type === 0 ? 7 : 30))
-													/ 3600).toFixed(2) }}
+													/ 3600).toFixed(2) + "度" }}
 										</span>
 									</el-col>
 									<el-col :span="6">充电费用:
@@ -470,7 +470,7 @@ const chargeForm: ChargeForm = reactive({
 	timeMinute: null,
 	timeSecond: null,
 	quantity: null,
-	custom: false,
+	custom: true,
 });
 
 const changeChargeRequestForm: ChangeChargeRequestForm = reactive({

@@ -30,28 +30,38 @@
 					<el-row>
 						<el-col :span="24">
 							<el-form label-position="top" inline class="demo-table-expand">
-								<el-col :span="8">
+								<el-col :span="6">
 									<el-form-item label="用户名" style="width: 100%;">
 										<el-text>{{ user_data.user_name }}</el-text>
 									</el-form-item>
 								</el-col>
-								<el-col :span="8">
+								<el-col :span="6">
 									<el-form-item label="邮箱" style="width: 100%;">
 										<span>{{ user_data.email }}</span>
 									</el-form-item>
 								</el-col>
+								<el-col :span="6">
+									<el-form-item label="账号创建时间" style="width: 100%;">
+										<span>{{ user_data.created_at }}</span>
+									</el-form-item>
+								</el-col>
+								<el-col :span="6">
+									<el-form-item label="账号更新时间" style="width: 100%;">
+										<span>{{ user_data.updated_at }}</span>
+									</el-form-item>
+								</el-col>
 								<el-divider></el-divider>
-								<el-col :span="8">
+								<el-col :span="6">
 									<el-form-item label="车型" style="width: 100%;">
 										<span>{{ user_data.car_type }}</span>
 									</el-form-item>
 								</el-col>
-								<el-col :span="8">
+								<el-col :span="6">
 									<el-form-item label="车牌号" style="width: 100%;">
 										<span>{{ user_data.license_plate }}</span>
 									</el-form-item>
 								</el-col>
-								<el-col :span="8">
+								<el-col :span="6">
 									<el-form-item label="电池容量" style="width: 100%;">
 										<span>{{ user_data.battery_capacity }}/KWH</span>
 									</el-form-item>

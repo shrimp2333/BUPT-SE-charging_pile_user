@@ -43,7 +43,7 @@ export function CalculateCurrentCost(start_at: number, time_duration: number, ch
     let cur_minute = 60 - start.getMinutes();
     if (time_duration < cur_minute * 60)
         cur_minute = Math.ceil(time_duration / 60);
-    console.log(cur_minute)
+    // console.log(cur_minute)
     // 计算当前小时的费用
     let total_cost = GetCurrentPrice(start.getHours()) * (cur_minute) * (charge_type == 1 ? fast_per_hour : slow_per_hour) / 60;
     return total_cost + CalculateCurrentCost(start_at + cur_minute * 60, time_duration - cur_minute * 60, charge_type);

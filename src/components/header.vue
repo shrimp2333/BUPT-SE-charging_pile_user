@@ -9,7 +9,7 @@
 				<Fold />
 			</el-icon>
 		</div>
-		<div class="logo">后台管理系统</div>
+		<div class="logo">青柠快充</div>
 		<div class="header-right">
 			<div class="header-user-con">
 				<!-- 消息中心 -->

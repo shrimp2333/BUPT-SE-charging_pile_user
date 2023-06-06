@@ -79,18 +79,18 @@ interface RegisterInfo {
 const router = useRouter();
 const isAgreement = ref<boolean>(false);
 const param = reactive<RegisterInfo>({
-    // username: "test",
-    // email: 'test@test.com',
-    // password: "123456",
-    // enpassword: "123456",
-    // license: "123456",
-    // battery: 123456,
-    username: '',
-    email: '',
-    password: '',
-    enpassword: '',
-    license: '',
-    battery: null,
+    username: "zhangsan",
+    email: 'zhangsan@test.com',
+    password: "123456",
+    enpassword: "123456",
+    license: "123456",
+    battery: 1000,
+    // username: '',
+    // email: '',
+    // password: '',
+    // enpassword: '',
+    // license: '',
+    // battery: null,
 });
 
 const rules: FormRules = {
@@ -165,7 +165,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
             // const keys = permiss.defaultList[param.username == 'admin' ? 'admin' : 'user'];
             // permiss.handleSet(keys);
             // localStorage.setItem('ms_keys', JSON.stringify(keys));
-            GetBaseInfoWhenLogin(resp.token);
+            await GetBaseInfoWhenLogin(resp.token);
 
             const keys = permiss.defaultList['admin'];
             permiss.handleSet(keys);
