@@ -41,7 +41,7 @@
 										<el-row style="margin-bottom: -4%;">
 											<el-col :span="12">
 												<el-form-item label="订单状态">
-													<span>{{ (props.row.status === 0 ? "正在进行" : "已完成") }}</span>
+													<span>{{ (props.row.status === 1 ? "正在进行" : "已完成") }}</span>
 												</el-form-item>
 											</el-col>
 											<el-col :span="12">

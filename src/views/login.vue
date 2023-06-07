@@ -50,8 +50,10 @@ interface LoginInfo {
 
 const router = useRouter();
 const param = reactive<LoginInfo>({
-	username: 'zhangsan',
-	password: '123456'
+	// username: 'zhangsan',
+	// password: '123456',
+	username: '301_01_V3_name',
+	password: '12345678'
 });
 
 const rules: FormRules = {
